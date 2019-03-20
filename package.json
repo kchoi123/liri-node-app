@@ -10,7 +10,8 @@
     "install": "^0.12.2",
     "moment": "^2.24.0",
     "node-spotify-api": "^1.0.7",
-    "npm": "^6.9.0"
+    "npm": "^6.9.0",
+    "terminal-link": "^1.2.0"
   },
   "devDependencies": {},
   "scripts": {
