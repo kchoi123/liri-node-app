@@ -12,7 +12,7 @@ var Spotify = require("node-spotify-api");
 var spotify = new Spotify(keys.spotify);
 
 // define moment
-var moment = require('moment');
+var moment = require("moment");
 
 // define inquirer
 var inquirer = require("inquirer");
@@ -28,15 +28,17 @@ liriProject();
 
 // function to run the app
 function liriProject() {
+    // call main inquirer prompt for four choices
     inquirer.prompt([
         {
             name: "type",
-            message: "What command?",
+            message: "Choose from the options below?",
             type: "list",
             choices: ["Search-Concerts", "Spotify-This-Song", "Movie-This", "Do-What-It-Says"]
         }
     ]).then(function (result) {
         if (result.type === "Search-Concerts") {
+            // creating individual prompt if search concerts was selected
             inquirer.prompt([
                 {
                     name: "responseConcerts",
@@ -52,6 +54,7 @@ function liriProject() {
                     }
                 }
             ]).then(function (resultConcerts) {
+                // gets rid of all spaces
                 var joinConcerts = resultConcerts.responseConcerts.replace(" ", "");
                 var queryUrlBand = "https://rest.bandsintown.com/artists/" + joinConcerts + "/events?app_id=codingbootcamp";
                 axios.get(queryUrlBand).then(
@@ -62,12 +65,34 @@ function liriProject() {
                         console.log("You're looking for venues that host: " + resultConcerts.responseConcerts.toUpperCase());
                         console.log("Venue Name: " + band.data[0].venue.name);
                         console.log("Location: " + band.data[0].venue.city + ", " + band.data[0].venue.region);
-                        console.log("Event Date: " + moment().format("L", band.data[0].datetime));
+                        // using moment to only show date and no time "MM/DD/YYYY"
+                        const date = moment(band.data[0].datetime, 'YYYY-MM-DD-HH:mm:ss').format('MM/DD/YYYY')
+                        console.log("Event Date: " + date);
                         // this is for the link
                         const linkConcerts = terminalLink('Click Here', band.data[0].url);
                         console.log("For more info: " + linkConcerts);
                         console.log("\x1b[32m%s\x1b[0m", "<================================================>");
                         // liriProject();
+
+                        var bandLog = [
+                            " ",
+                            "<================================================>",
+                            "We are compiling: " + result.type + " with " + resultConcerts.responseConcerts,
+                            "--------------------------------------------------",
+                            "You're looking for venues that host: " + resultConcerts.responseConcerts.toUpperCase(),
+                            "--------------------------------------------------",
+                            "Venue Name: " + band.data[0].venue.name,
+                            "--------------------------------------------------",
+                            "Location: " + band.data[0].venue.city + ", " + band.data[0].venue.region,
+                            // "Event Date: " + moment().format("L", band.data[0].datetime,
+                            "<================================================>"
+                        ].join("\n\n");
+
+                        fs.appendFile("log.txt", bandLog, function(err) {
+                            if (err) {
+                                console.log(err);
+                            }
+                        })
                     }
                 )
             })
@@ -81,6 +106,7 @@ function liriProject() {
                     default: "The Sign"
                 }
             ]).then(function (resultSpotify) {
+                // if statement to default the sign ace of base
                 if (resultSpotify.responseSpotify === "The Sign") {
                     spotify.search({ type: 'track', query: "the sign ace of base" }, function (err, data) {
                         if (err) {
@@ -99,6 +125,7 @@ function liriProject() {
                         // liriProject();
                     });
                 }
+                // otherwise everything else gets searched through spodify
                 else {
                     spotify.search({ type: 'track', query: resultSpotify.responseSpotify }, function (err, data) {
                         if (err) {
@@ -108,11 +135,10 @@ function liriProject() {
                         console.log('\x1b[33m%s\x1b[0m', "We are compiling: " + result.type + " with " + resultSpotify.responseSpotify);
                         console.log("\x1b[34m%s\x1b[0m", "--------------------------------------------------");
                         console.log("Artist(s): " + data.tracks.items[0].album.artists[0].name);
-                        console.log("Song Title: " + data.tracks.items[0].album.name.toUpperCase());
+                        console.log("Album: " + data.tracks.items[0].album.name.toUpperCase());
                         const linkSpotify = terminalLink('Click Here', data.tracks.items[0].album.external_urls.spotify);
                         console.log("Spotify Link: " + linkSpotify);
                         console.log("Release Date: " + moment().format("L", data.tracks.items[0].album));
-                        // console.log(data.tracks.items[0]);
                         console.log("\x1b[32m%s\x1b[0m", "<================================================>");
                         // liriProject();
                     });
@@ -125,7 +151,7 @@ function liriProject() {
                     name: "responseMovie",
                     message: "Enter Movie Name",
                     type: "input",
-                    default: "Mr Nobody"
+                    default: "Mr. Nobody"
                 }
             ]).then(function (resultMovie) {
                 // this ways uses the plus symbol but no other symbols
@@ -153,6 +179,7 @@ function liriProject() {
             })
         }
         else {
+            // useing read function to read of random.txt
             fs.readFile("random.txt", "utf8", function (err, data) {
                 if (err) {
                     return console.log(err);
